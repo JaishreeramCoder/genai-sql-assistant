@@ -178,7 +178,7 @@ st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
 st.markdown(
     """
     <div style="margin-top:-10px; background-color: transparent;">
-        <img src="https://smft.axtria.com/images/logo/Axtria_logo.jpg" width="140" style="background:transparent;">
+        <img src="https://media.glassdoor.com/sql/641281/axtria-squarelogo-1474629868589.png" width="140" style="background:transparent;">
     </div>
     """,
     unsafe_allow_html=True
