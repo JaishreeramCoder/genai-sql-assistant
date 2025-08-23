@@ -58,8 +58,7 @@ The app is powered by **SQLite (local or cloud)** and keeps both the admin and u
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/streamlit-sqlite-dashboard.git
-cd streamlit-sqlite-dashboard
+git clone https://github.com/Ishu2002k/Streamlit.git
 ```
 
 2. **Create virtual environment (recommended)**
