@@ -1,4 +1,4 @@
-# 📊 Streamlit Database Dashboard
+# 📊 GenAI SQL Assistant
 
 ## 📌 Overview
 
