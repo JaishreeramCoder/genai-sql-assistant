@@ -10,14 +10,26 @@ import sqlitecloud  # Use sqlitecloud
 # Load .env file
 load_dotenv()
 
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+DEPLOYMENT_CHAT = os.getenv("AZURE_DEPLOYMENT_CHAT")
+DEPLOYMENT_EMBED = os.getenv("AZURE_DEPLOYMENT_EMBED")
+
+# Initialize client
+client = AzureOpenAI(
+    api_key=AZURE_OPENAI_API_KEY,   # ✅ Explicitly set key
+    api_version="2024-02-01",
+    azure_endpoint=AZURE_OPENAI_ENDPOINT
+)
+
 # -----------------------------
 # Azure OpenAI client
 # -----------------------------
-client = AzureOpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_version=os.getenv("OPENAI_API_VERSION"),
-)
+# client = AzureOpenAI(
+#     api_key=os.getenv("OPENAI_API_KEY"),
+#     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+#     api_version=os.getenv("OPENAI_API_VERSION"),
+# )
 
 # -----------------------------
 # Helpers
