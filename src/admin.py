@@ -22,38 +22,50 @@ def admin_panel():
     # -------------------------
     PASSWORD = "admin_123"
 
+    # persist password in session state so it can be edited during the session
+    if "PASSWORD" not in st.session_state:
+        st.session_state.PASSWORD = PASSWORD
+
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
 
     if not st.session_state.authenticated:
         st.subheader("Login Required")
-        password_input = st.text_input("Enter password:", type="password")
-        if st.button("Login"):
-            if password_input == PASSWORD:
-                st.session_state.authenticated = True
-                st.success("✅ Logged in successfully!")
-                st.rerun()
-            else:
-                st.error("❌ Wrong password. Try again.")
+        # Use a form so pressing Enter submits it
+        with st.form("login_form", clear_on_submit=False):
+            password_input = st.text_input("Enter password:", type="password")
+            submitted = st.form_submit_button("Login")
+            if submitted:
+                if password_input == st.session_state.PASSWORD:
+                    st.session_state.authenticated = True
+                    st.success("✅ Logged in successfully!")
+                    st.rerun()
+                else:
+                    st.error("❌ Wrong password. Try again.")
         return
 
+
     # -------------------------
-    # Logout and Open in Cloud buttons row
+    # Logout / Edit and Open in Cloud buttons row (layout adjusted)
     # -------------------------
-    col_left, col_spacer, col_right = st.columns([15, 10, 8])
+    # Left: Open in SQLite Cloud (keeps it at top-left)
+    # Right: Logout and Edit Password placed side-by-side
+    col_left, col_mid, col_right = st.columns([10, 2, 3])
 
     with col_left:
-        if st.button("🔓 Logout"):
-            st.session_state.authenticated = False
-            st.rerun()
-
-   
-    with col_right:
         st.link_button(
             "🌐 Open in SQLite Cloud",
             "https://dashboard.sqlitecloud.io/organizations/j5hy3buhz/projects/cltnsqbxhz/studio?database=uploaded_db.sqlite"
         )
 
+    with col_mid:
+        if st.button("🔓 Logout"):
+            st.session_state.authenticated = False
+            st.rerun()
+
+    with col_right:
+        if st.button("✏️ Edit Password"):
+            edit_password_dialog()
 
     st.subheader("📂 Upload CSV Files to SQLite Cloud Database")
 
@@ -311,3 +323,36 @@ def admin_panel():
         with col2:
             if st.button("❌ Delete Table"):
                 confirm_delete_dialog(selected_table)
+
+
+# -------------------------
+# Edit Password Dialog (defined outside to keep structure clear)
+# -------------------------
+@st.dialog("🔑 Edit Password")
+def edit_password_dialog():
+    st.info("Change the admin password for this session.")
+    current = st.text_input("Current password:", type="password")
+    new_pw = st.text_input("New password:", type="password")
+    confirm_pw = st.text_input("Confirm new password:", type="password")
+
+    col1, col2 = st.columns(2)
+    if col1.button("Save", key="save_pw"):
+        if current != st.session_state.PASSWORD:
+            st.error("Current password is incorrect.")
+        elif not new_pw:
+            st.error("New password cannot be empty.")
+        elif new_pw != confirm_pw:
+            st.error("New passwords do not match.")
+        else:
+            st.session_state.PASSWORD = new_pw
+            st.success("Password updated for this session.")
+            st.rerun()
+
+    if col2.button("Cancel", key="cancel_pw"):
+        st.info("Password change cancelled.")
+        st.rerun()
+
+
+# If you want to run as a script
+if __name__ == "__main__":
+    admin_panel()
