@@ -2,6 +2,17 @@ import pandas as pd
 import streamlit as st
 import os
 import sqlitecloud  # Use sqlitecloud instead of sqlite3
+import io
+import csv
+
+# -------------------------
+# Connection Helper
+# -------------------------
+def get_connection():
+    return sqlitecloud.connect(
+        "sqlitecloud://cbwb6jhxhk.g1.sqlite.cloud:8860/user_info?apikey=tzKSY69TJgit4JxRZqGYxSSSXXn5EWfmoYezjolRdn8"
+    )
+
 
 def admin_panel():
     st.title("🔐 Admin Panel")
@@ -39,56 +50,98 @@ def admin_panel():
     with col_right:
         st.link_button(
             "🌐 Open in SQLite Cloud",
-            "https://dashboard.sqlitecloud.io/organizations/aibej2uhk/projects/cbwb6jhxhk/studio?database=uploaded_db.sqlite"
+            "https://dashboard.sqlitecloud.io/organizations/aibej2uhk/projects/cbwb6jhxhk/studio?database=user_info"
         )
 
-    st.subheader("📂 Upload Files to SQLite Cloud Database")
+    st.subheader("📂 Upload CSV Files to SQLite Cloud Database")
 
     # -------------------------
-    # Connect to SQLite Cloud
-    # -------------------------
-    conn = sqlitecloud.connect(
-        "sqlitecloud://cbwb6jhxhk.g1.sqlite.cloud:8860/uploaded_db.sqlite?apikey=tzKSY69TJgit4JxRZqGYxSSSXXn5EWfmoYezjolRdn8"
-    )
-
-    # -------------------------
-    # Upload CSV/Excel files
+    # Upload CSV files only
     # -------------------------
     uploaded_files = st.file_uploader(
-        "Upload CSV or Excel files",
-        type=["csv", "xlsx", "xls"],
+        "Upload CSV files",
+        type=["csv"],
         accept_multiple_files=True
     )
+    CHUNK_SIZE = 500  # Number of rows to insert per batch
 
     if uploaded_files:
         for file in uploaded_files:
             base_name = os.path.splitext(file.name)[0].strip().replace(" ", "_")
 
-            if file.name.endswith(".csv"):
-                df = pd.read_csv(file)
-                df.to_sql(base_name, conn, if_exists="replace", index=False)
-                st.success(f"✅ Uploaded `{file.name}` as table `{base_name}`")
-            else:  # Excel → loop through all sheets
-                xls = pd.ExcelFile(file)
-                for sheet in xls.sheet_names:
-                    df = pd.read_excel(file, sheet_name=sheet)
-                    table_name = f"{base_name}_{sheet}".strip().replace(" ", "_")
-                    df.to_sql(table_name, conn, if_exists="replace", index=False)
-                    st.success(f"✅ Uploaded `{file.name}` (sheet: {sheet}) as table `{table_name}`")
+            # Read file bytes into buffer
+            file_bytes = file.read()
+            buffer = io.BytesIO(file_bytes)
+
+            # Count total rows (excluding header)
+            total_rows = sum(1 for _ in io.TextIOWrapper(io.BytesIO(file_bytes), encoding="utf-8")) - 1
+            buffer.seek(0)
+
+            # Progress bar + status
+            progress = st.progress(0, text=f"Uploading {file.name}...")
+            status = st.empty()
+
+            with get_connection() as conn:
+                cur = conn.cursor()
+
+                # Create table from header
+                buffer.seek(0)
+                reader = csv.reader(io.TextIOWrapper(buffer, encoding="utf-8"))
+                headers = next(reader)
+                cols = ", ".join(f'"{h.strip()}" TEXT' for h in headers)
+                cur.execute(f"DROP TABLE IF EXISTS {base_name}")
+                cur.execute(f"CREATE TABLE {base_name} ({cols})")
+                conn.commit()
+
+                uploaded = 0
+                batch = []
+
+                # Stream rows
+                for row in reader:
+                    batch.append(row)
+                    if len(batch) >= CHUNK_SIZE:
+                        placeholders = ", ".join("?" * len(headers))
+                        cur.executemany(
+                            f"INSERT INTO {base_name} VALUES ({placeholders})", batch
+                        )
+                        conn.commit()
+                        uploaded += len(batch)
+                        batch.clear()
+
+                        percent = int(uploaded / total_rows * 100)
+                        progress.progress(percent, text=f"{file.name}: {percent}% uploaded")
+                        status.text(f"{uploaded}/{total_rows} rows uploaded")
+
+                # Insert any leftovers
+                if batch:
+                    placeholders = ", ".join("?" * len(headers))
+                    cur.executemany(
+                        f"INSERT INTO {base_name} VALUES ({placeholders})", batch
+                    )
+                    conn.commit()
+                    uploaded += len(batch)
+
+                progress.progress(100, text=f"✅ {file.name} upload complete")
+                status.text(f"Finished uploading {uploaded} rows")
+
 
     # -------------------------
     # Fetch Tables Function
     # -------------------------
     def fetch_tables():
-        return pd.read_sql(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';",
-            conn
-        )
+        with get_connection() as conn:
+            tables = pd.read_sql(
+                "SELECT name FROM sqlite_master WHERE type='table';",
+                conn
+            )
+        # Filter out system/AI tables
+        return tables[~tables["name"].str.startswith(("sqlite_", "_sqliteai_"))]
 
     # -------------------------
     # Display Tables
     # -------------------------
     tables = fetch_tables()
+    tables.index = range(1, len(tables)+1)
     st.subheader("📋 Tables in Database")
     st.dataframe(tables, use_container_width=True)
 
@@ -101,15 +154,15 @@ def admin_panel():
 
         with col1:
             if st.button("🔍 View Table Data"):
-                df = pd.read_sql(f"SELECT * FROM {selected_table};", conn)
+                with get_connection() as conn:
+                    df = pd.read_sql(f"SELECT * FROM {selected_table};", conn)
                 st.subheader(f"Contents of `{selected_table}`")
                 st.dataframe(df, use_container_width=True)
 
         with col2:
             if st.button("❌ Delete Table"):
-                conn.execute(f"DROP TABLE IF EXISTS {selected_table};")
-                conn.commit()
+                with get_connection() as conn:
+                    conn.execute(f"DROP TABLE IF EXISTS {selected_table};")
+                    conn.commit()
                 st.warning(f"Table `{selected_table}` has been deleted!")
                 st.rerun()
-
-    conn.close()

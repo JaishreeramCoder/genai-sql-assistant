@@ -157,7 +157,7 @@ st.markdown(hide_sidebar_style, unsafe_allow_html=True)
 page_bg = """
 <style>
 [data-testid="stAppViewContainer"] {
-    background-color: #d9fdd3; /* Light green */
+    background-color: #D4D4D4; /* Light green */
     padding-top: 0rem; /* Reduce top padding */
 }
 [data-testid="stHeader"] {

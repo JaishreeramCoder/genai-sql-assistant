@@ -8,6 +8,7 @@ import seaborn as sns
 import numpy as np
 import sqlitecloud  # ✅ for SQLite Cloud
 
+
 def visualize_panel(db_path="uploaded_db.sqlite", use_cloud=True):
     st.title("📊 Smart Table Visualization")
 
@@ -17,16 +18,41 @@ def visualize_panel(db_path="uploaded_db.sqlite", use_cloud=True):
     if use_cloud:
         # ✅ SQLite Cloud connection
         conn = sqlitecloud.connect(
-            "sqlitecloud://cbwb6jhxhk.g1.sqlite.cloud:8860/uploaded_db.sqlite?apikey=tzKSY69TJgit4JxRZqGYxSSSXXn5EWfmoYezjolRdn8"
+            "sqlitecloud://cbwb6jhxhk.g1.sqlite.cloud:8860/user_info?apikey=tzKSY69TJgit4JxRZqGYxSSSXXn5EWfmoYezjolRdn8"
         )
     else:
         # ✅ Local SQLite connection
         conn = sqlite3.connect(db_path)
 
+    # -------------------------
     # Get list of tables
-    tables = pd.read_sql(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';", conn
-    )["name"].tolist()
+    # -------------------------
+    tables = []
+    cursor = conn.cursor()
+
+    if use_cloud:
+        # ✅ SQLite Cloud uses pragma_table_list
+        cursor.execute("PRAGMA table_list;")
+        result = cursor.fetchall()
+        if result:
+            # result = (schema, name, type, ncol, wr, strict)
+            tables = [
+                r[1] for r in result
+                if r[2] == "table"
+                and not r[1].startswith("_sqliteai_")
+                and not r[1].startswith("sqlite_")
+            ]
+    else:
+        # ✅ Local SQLite
+        cursor.execute("""
+            SELECT name 
+            FROM sqlite_master 
+            WHERE type='table' 
+              AND name NOT LIKE 'sqlite_%'
+              AND name NOT LIKE '_sqliteai_%';
+        """)
+        result = cursor.fetchall()
+        tables = [r[0] for r in result] if result else []
 
     if not tables:
         st.warning("⚠️ No tables found in the database.")
@@ -50,7 +76,9 @@ def visualize_panel(db_path="uploaded_db.sqlite", use_cloud=True):
     st.subheader("📋 Data Overview")
     st.write(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
     st.write("**Missing Values:**")
-    st.dataframe(df.isna().sum().reset_index().rename(columns={0: "Missing Values", "index": "Column"}))
+    st.dataframe(
+        df.isna().sum().reset_index().rename(columns={0: "Missing Values", "index": "Column"})
+    )
 
     st.write("**Preview:**")
     st.dataframe(df.head(10))
@@ -143,6 +171,10 @@ def visualize_panel(db_path="uploaded_db.sqlite", use_cloud=True):
         sns.lineplot(x=df_sorted[time_col], y=df_sorted[value_col], ax=ax)
         ax.set_title(f"{value_col} over time ({time_col})")
         st.pyplot(fig)
+
+
+
+
 
 
 
