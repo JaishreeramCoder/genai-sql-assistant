@@ -219,7 +219,7 @@ def admin_panel():
                 file_bytes = f.read()  # read bytes once
                 fingerprint = hashlib.sha256(file_bytes).hexdigest()
                 if not force_reupload and fingerprint in st.session_state.processed_files_fingerprints:
-                    st.info(f"Skipping {f.name}: already uploaded in this session.")
+                    st.info(f"Skipping {f.name}: a file with the same content has already been uploaded in this session.")
                     continue
                 new_files.append((f.name, file_bytes, fingerprint))
             if not new_files:

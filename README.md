@@ -17,7 +17,7 @@ The app is powered by **SQLite (local or cloud)** and keeps both the admin and u
 ### 🔑 Admin Panel (`admin.py`)
 
 * Password-protected access
-* Upload CSV/Excel files → automatically stored as database tables
+* Upload CSV files → automatically stored as database tables
 * View and delete tables dynamically
 * One-click access to the **SQLite Cloud dashboard**
 * Ensures **real-time sync** with the user and visualization sections
@@ -37,28 +37,12 @@ The app is powered by **SQLite (local or cloud)** and keeps both the admin and u
 
 ---
 
-## 🏗️ Project Structure
-
-```
-📂 Project/
-│── admin.py          # Admin dashboard
-│── user.py           # User dashboard
-│── visualize.py      # Visualization dashboard
-│── app.py            # Main entry point
-│── uploaded_db.sqlite # SQLite database (local/cloud sync)
-│── requirement.txt    # Project dependencies
-│── .gitignore         # Git ignore rules
-│── README.md          # Documentation
-```
-
----
-
 ## 🔧 Installation
 
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/Ishu2002k/Streamlit.git
+git clone https://github.com/JaishreeramCoder/genai-sql-assistant
 ```
 
 2. **Create virtual environment (recommended)**
@@ -66,20 +50,20 @@ git clone https://github.com/Ishu2002k/Streamlit.git
 ```bash
 python -m venv venv
 source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
+venv\Scripts\activate.bat      # Windows Command Prompt
 ```
 
 3. **Install dependencies**
 
 ```bash
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ---
 
 ## ▶️ Usage
 
-### Run Admin Panel
+### Run Admin Panel from the `src` folder
 
 streamlit run app.py
 
@@ -96,21 +80,3 @@ conn = sqlitecloud.connect(
     "sqlitecloud://<project-id>.g1.sqlite.cloud:8860/uploaded_db.sqlite?apikey=<your-api-key>"
 )
 ```
-
----
-
-## 📊 Example Workflows
-
-1. **Admin uploads data** (CSV/Excel → database tables).
-2. **User queries data** using SQL or text → gets filtered results.
-3. **User checks query history** to repeat previous requests.
-4. **Visualization panel** provides table insights and summaries.
-
----
-
-## ✅ Future Enhancements
-* Role-based authentication (multiple admins/users)
-* More visualization charts & dashboards
-* Scheduled database backups
-
----

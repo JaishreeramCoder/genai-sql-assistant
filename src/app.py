@@ -13,7 +13,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Fix ghost strip when collapsed ---
 hide_sidebar_style = """
     <style>
         section[data-testid="stSidebar"][aria-expanded="false"] {
