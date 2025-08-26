@@ -2,11 +2,13 @@ import streamlit as st
 from admin import admin_panel
 from user import user_panel
 from visualize import visualize_panel
+import warnings
+warnings.filterwarnings("ignore")
 
 # App Title and Branding
 st.set_page_config(
     initial_sidebar_state="collapsed",
-    page_title="Axtria Data Platform",
+    page_title="GenAI SQL Assistant",
     page_icon="📊",
     layout="wide"
 )
@@ -34,7 +36,7 @@ page_bg = """
     background: rgba(0,0,0,0); /* Transparent header */
 }
 [data-testid="stSidebar"] {
-    background-color: #f0fff0; /* Optional: light green sidebar */
+    background-color: #D4D4D4; /* Optional: light green sidebar */
 }
 .block-container {
     padding-top: 0rem !important;  /* Remove Streamlit default top gap */
@@ -54,6 +56,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+# st.image(
+#     "axtria_logo.png", 
+#     width=140
+# )
 st.markdown(
     "<h2 style='text-align: center; color: #2E86C1; margin-top: -10px;'>📊 GenAI SQL Assistant</h2>",
     unsafe_allow_html=True

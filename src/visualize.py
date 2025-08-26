@@ -1,3 +1,4 @@
+# Visualization with SQLite Cloud support
 import sqlite3
 import pandas as pd
 import streamlit as st
@@ -16,7 +17,7 @@ def visualize_panel(db_path="uploaded_db.sqlite", use_cloud=True):
     if use_cloud:
         # ✅ SQLite Cloud connection
         conn = sqlitecloud.connect(
-            "sqlitecloud://cltnsqbxhz.g2.sqlite.cloud:8860/uploaded_db.sqlite?apikey=sAxlghIjO7aOpDdaLQgSIPrvemFEyBrv5Mh3cKutPNs"
+            "sqlitecloud://cbwb6jhxhk.g1.sqlite.cloud:8860/user_info?apikey=tzKSY69TJgit4JxRZqGYxSSSXXn5EWfmoYezjolRdn8"
         )
     else:
         # ✅ Local SQLite connection
