@@ -17,7 +17,7 @@ The app is powered by **SQLite (local or cloud)** and keeps both the admin and u
 ### 🔑 Admin Panel (`admin.py`)
 
 * Password-protected access
-* Upload CSV/Excel files → automatically stored as database tables
+* Upload CSV files → automatically stored as database tables
 * View and delete tables dynamically
 * One-click access to the **SQLite Cloud dashboard**
 * Ensures **real-time sync** with the user and visualization sections
@@ -42,7 +42,7 @@ The app is powered by **SQLite (local or cloud)** and keeps both the admin and u
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/Ishu2002k/Streamlit.git
+git clone https://github.com/JaishreeramCoder/genai-sql-assistant
 ```
 
 2. **Create virtual environment (recommended)**
