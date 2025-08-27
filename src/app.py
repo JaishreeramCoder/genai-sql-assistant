@@ -5,7 +5,7 @@ from visualize import visualize_panel
 import warnings
 warnings.filterwarnings("ignore")
 
-# App Title and Branding
+# App Title and Icon
 st.set_page_config(
     initial_sidebar_state="collapsed",
     page_title="GenAI SQL Assistant",
@@ -22,23 +22,30 @@ hide_sidebar_style = """
         }
     </style>
 """
+# Note:
+# !important styles to override Streamlit default
+# data-testid is a custom data-* attribute used by streamlit for accessing elements
+# aria-expanded a html attribute used for accessibility, it is true when sidebar is expanded and false when collapsed
 st.markdown(hide_sidebar_style, unsafe_allow_html=True)
 
 # --- Page background styling ---
 page_bg = """
 <style>
 [data-testid="stAppViewContainer"] {
-    background-color: #D4D4D4; /* Light green */
-    padding-top: 0rem; /* Reduce top padding */
+    background-color: #D4D4D4; /* sets main page background to light grey */
+    padding-top: 0rem;         /* removes extra padding at the top */
 }
+
 [data-testid="stHeader"] {
-    background: rgba(0,0,0,0); /* Transparent header */
+    background: rgba(0,0,0,0); /* makes the Streamlit header transparent */
 }
+
 [data-testid="stSidebar"] {
-    background-color: #D4D4D4; /* Optional: light green sidebar */
+    background-color: #D4D4D4; /* gives sidebar the same light grey bg */
 }
+
 .block-container {
-    padding-top: 0rem !important;  /* Remove Streamlit default top gap */
+    padding-top: 0rem !important;  /* removes the default top gap inside content */
 }
 </style>
 """
@@ -53,13 +60,8 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True
-)
+) # axtria logo
 
-
-# st.image(
-#     "axtria_logo.png", 
-#     width=140
-# )
 st.markdown(
     "<h2 style='text-align: center; color: #2E86C1; margin-top: -10px;'>📊 GenAI SQL Assistant</h2>",
     unsafe_allow_html=True
@@ -68,7 +70,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 st.write("---")
 
 # Initialize session state
-if "page" not in st.session_state:
+if "page" not in st.session_state: 
     st.session_state.page = "home"  # default to role selection
 
 # --- Home Page (Role Selection) ---
@@ -79,7 +81,7 @@ if st.session_state.page == "home":
     with col1:
         if st.button("👨‍💼 Admin", use_container_width=True):
             st.session_state.page = "admin"
-            st.rerun()
+            st.rerun() # after setting page, rerun to reflect changes immediately
 
     with col2:
         if st.button("👤 User", use_container_width=True):
@@ -93,7 +95,7 @@ if st.session_state.page == "home":
 
 # --- Admin Page ---
 elif st.session_state.page == "admin":
-    st.sidebar.button("⬅️ Back to Home", on_click=lambda: st.session_state.update(page="home"))
+    st.sidebar.button("⬅️ Back to Home", on_click=lambda: st.session_state.update(page="home")) # adds a back button in sidebar
     admin_panel()
 
 # --- User Page ---

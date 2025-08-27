@@ -14,9 +14,9 @@ import hashlib # for file fingerprinting
 # Load .env file
 load_dotenv()
 
-DATABASE_CONNECTION_STRING = os.getenv("DATABASE_CONNECTION_STRING")
-DATABASE = os.getenv("DATABASE")
-USER_CONNECTION_STRING = os.getenv("USER_CONNECTION_STRING")
+DATABASE_CONNECTION_STRING = os.getenv("DATABASE_CONNECTION_STRING") # ✅ for main DB where CSVs are uploaded
+DATABASE = os.getenv("DATABASE") # ✅ for Open in Cloud button
+USER_CONNECTION_STRING = os.getenv("USER_CONNECTION_STRING") # ✅ for user email/password DB
 
 # ------------------------
 # DB Helpers
@@ -42,16 +42,14 @@ def update_password(email, new_password):
 def send_otp(email, otp):
     sender = os.getenv("SMTP_EMAIL")       # Gmail address
     password = os.getenv("SMTP_PASSWORD")  # Gmail App Password
-    print(sender)
-    print(password)
 
     msg = MIMEText(f"Your OTP for password reset is: {otp}")
     msg["Subject"] = "Password Reset OTP"
     msg["From"] = sender
     msg["To"] = email
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
+    with smtplib.SMTP("smtp.gmail.com", 587) as server: # we generally use port 587
+        server.starttls() # upgrade to tls
         server.login(sender, password)
         server.sendmail(sender, email, msg.as_string())
 
@@ -59,6 +57,7 @@ def send_otp(email, otp):
 # ------------------------
 # Forgot Password Flow
 # ------------------------
+# we have 3 steps: enter email(reset_step=1) -> verify OTP(reset_step=2) -> reset password(3)
 def forgot_password():
     st.subheader("🔑 Forgot Password")
 
@@ -69,7 +68,7 @@ def forgot_password():
 
     # Step 1: Enter Email
     if st.session_state.reset_step == 1:
-        email = st.text_input("Enter your registered email:")
+        email = st.text_input("Enter your registered email:") # display email input widget 
         if st.button("Send OTP"):
             user = get_user(email)
             if user:
@@ -133,6 +132,7 @@ def admin_panel():
     # Password Protection
     # -------------------------
     PASSWORD = "admin_123"
+    # initialize session state variables
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     
@@ -173,7 +173,7 @@ def admin_panel():
     # -------------------------
     # Logout and Open in Cloud buttons row
     # -------------------------
-    col_left, col_spacer, col_right = st.columns([15, 10, 8])
+    col_left, col_spacer, col_right = st.columns([15, 10, 8]) # no content inside col_spacer, it's only for spacing
  
     with col_left:
         if st.button("🔓 Logout"):
@@ -185,7 +185,7 @@ def admin_panel():
         st.link_button(
             "🌐 Open in SQLite Cloud",
             DATABASE
-        )
+        ) # opens the link in new tab
  
     st.subheader("📂 Upload CSV Files to SQLite Cloud Database")
  
@@ -206,7 +206,7 @@ def admin_panel():
         st.session_state.processed_files_fingerprints = set()
 
     # Option: force re-upload even if identical content was processed before
-    force_reupload = st.checkbox("Force re-upload identical files", value=False)
+    force_reupload = st.checkbox("Force re-upload identical files", value=False) # boolean
 
     # Only show the Start Upload button (no file listing)
     if st.button("⬆️ Start Upload"):
@@ -230,7 +230,7 @@ def admin_panel():
                     st.info(f"Processing file: {name}")
                     base_name = os.path.splitext(name)[0].strip().replace(" ", "_")
                     text = file_bytes.decode("utf-8", errors="replace")
-                    total_rows = sum(1 for _ in io.StringIO(text)) - 1
+                    total_rows = sum(1 for _ in io.StringIO(text)) - 1 # minus 1 to exclude header row
                     progress = st.progress(0, text=f"Uploading {name}...")
                     status = st.empty()
                     with get_connection() as conn:
@@ -245,7 +245,8 @@ def admin_panel():
                         reader = csv.reader(io.StringIO(text))
                         raw_headers = next(reader)
                         headers = [h.strip() for h in raw_headers]
-
+                        
+                        # checks if 
                         def is_date_like(series, min_fraction=0.6):
                             ser = series.dropna().astype(str)
                             if ser.empty:
@@ -274,12 +275,12 @@ def admin_panel():
                                 except Exception:
                                     pass
                                 coerced = pd.to_numeric(col.dropna().astype(str), errors="coerce")
-                                if not coerced.empty and coerced.notna().sum() == len(col.dropna()):
+                                if not coerced.empty and coerced.notna().sum() == len(col.dropna()): # all values coerced to number if all are whole number then int else float
                                     if (coerced.dropna() % 1 == 0).all():
                                         dtypes[h] = "int"
                                     else:
                                         dtypes[h] = "float"
-                                else:
+                                else: # if cannot be coerced to number, then text
                                     dtypes[h] = "text"
                             else:
                                 dtypes[h] = "text"
@@ -367,7 +368,7 @@ def admin_panel():
                 "SELECT name FROM sqlite_master WHERE type='table';",
                 conn
             )
-        # Filter out system/AI tables
+        # Filter out system/AI tablesa
         return tables[~tables["name"].str.startswith(("sqlite_", "_sqliteai_"))]
  
     # -------------------------
